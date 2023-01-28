@@ -58,6 +58,7 @@ def main():
             sun.GetDrawnSunpotsImage(),
         )
 
+    clusters_sunspots: list[list[sun_data.SunspotsCluster]] = []
     for sun, clusters in zip(suns, clusters_list):
         sunspots: list[sun_data.Sunspot] = sun.GetSunspots()
         cluster_types = []
@@ -69,8 +70,7 @@ def main():
             if not (is_resisterd):
                 cluster_types.append(cluster)
 
-        img_test = sun.GetColorImage().copy()
-
+        cluster_sunspots = []
         for cluster_type in cluster_types:
             sunspots_cluster: list[sun_data.Sunspot] = []
             for sunspot, cluster in zip(sunspots, clusters):
@@ -90,17 +90,16 @@ def main():
             lower = int(max(y_list))
             left = int(min(x_list))
             right = int(max(x_list))
-            upperleft = (left, upper)
-            lowerright = (right, lower)
-            print(upperleft)
-            print(lowerright)
 
-            img_test = cv2.rectangle(
-                img_test, upperleft, lowerright, (255, 0, 0), 2
+            clip_cluster = sun.GetColorImage().copy()
+            clip_cluster = clip_cluster[upper:lower, left:right]
+            cluster_x = (right - left) / 2
+            cluster_y = (lower - upper) / 2
+            cluster_sunspots.append(
+                sun_data.SunspotsCluster(clip_cluster, (cluster_x, cluster_y))
             )
 
-        cv2.imshow("img", img_test)
-        cv2.waitKey(0)
+        clusters_sunspots.append(cluster_sunspots)
 
 
 if __name__ == "__main__":

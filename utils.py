@@ -72,7 +72,9 @@ def clip_imgs(
     return (cliped_color_imgs, cliped_bin_imgs)
 
 
-def make_annotation(contour: list, size: tuple = (1000, 1000)) -> sun_data.Sunspot:
+def make_annotation(
+    contour: list, size: tuple = (1000, 1000)
+) -> sun_data.Sunspot:
     x = []
     y = []
     for pos in contour:

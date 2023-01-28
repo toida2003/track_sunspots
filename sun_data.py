@@ -86,3 +86,15 @@ class Sun:
 
     def GetDrawnSunpotsImage(self) -> np.ndarray:
         return self.drawn_sunspots_img
+
+
+class SunspotsCluster:
+    def __init__(self, img: np.ndarray, point: tuple, size=(100, 100)) -> None:
+        self.img = cv2.resize(img, size)
+        self.point = point
+
+    def GetImage(self) -> np.ndarray:
+        return self.img
+
+    def GetPoint(self) -> tuple:
+        return self.point
