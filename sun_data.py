@@ -59,11 +59,20 @@ class Sun:
             )
             self.sunspots.append(sunspot)
 
-    def GetSunspots(self) -> list:
+    def GetSunspots(self) -> list[Sunspot]:
         return self.sunspots
 
-    def GetSunspotsNorm(self) -> list:
+    def GetSunspotsNorm(self) -> list[Sunspot]:
         return self.sunspots_norm
+
+    def DrawSunspotImage(self, index: int, color: tuple) -> None:
+        self.drawn_sunspots_img = cv2.rectangle(
+            self.drawn_sunspots_img,
+            self.sunspots[index].GetUpperLeft(),
+            self.sunspots[index].GetLowerRight(),
+            color,
+            2,
+        )
 
     def DrawSunspotsImage(self, color: tuple = (255, 0, 0)) -> None:
         for sunspot in self.sunspots:
