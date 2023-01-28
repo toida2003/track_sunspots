@@ -36,6 +36,7 @@ def main():
         suns.append(sun)
 
     # クラスタリング
+    clusters_list = []
     for i, sun in enumerate(suns):
         sunspots: list[sun_data.Sunspot] = sun.GetSunspotsNorm()
         points: list[tuple] = []
@@ -43,10 +44,11 @@ def main():
             points.append(sunspot.GetPoint())
 
         color = np.random.randint(0, 255, (200, 3))
-        min_samples = 4
+        min_samples = 3
         eps = 0.2
         dbscan = DBSCAN(min_samples=min_samples, eps=eps)
         clusters = dbscan.fit_predict(points)
+        clusters_list.append(clusters)
 
         for j, k in enumerate(clusters):
             sun.DrawSunspotImage(j, color[k].tolist())
@@ -55,6 +57,50 @@ def main():
             f"result/{i}_min_samples_{min_samples}_eps_{eps}.jpg",
             sun.GetDrawnSunpotsImage(),
         )
+
+    for sun, clusters in zip(suns, clusters_list):
+        sunspots: list[sun_data.Sunspot] = sun.GetSunspots()
+        cluster_types = []
+        for cluster in clusters:
+            is_resisterd = False
+            for i in cluster_types:
+                if i == cluster:
+                    is_resisterd = True
+            if not (is_resisterd):
+                cluster_types.append(cluster)
+
+        img_test = sun.GetColorImage().copy()
+
+        for cluster_type in cluster_types:
+            sunspots_cluster: list[sun_data.Sunspot] = []
+            for sunspot, cluster in zip(sunspots, clusters):
+                if cluster == cluster_type:
+                    sunspots_cluster.append(sunspot)
+
+            x_list = []
+            y_list = []
+            for sunspot in sunspots_cluster:
+                point = sunspot.GetPoint()
+                area = sunspot.GetArea()
+                x_list.append(point[0] + area[0] / 2)
+                x_list.append(point[0] - area[0] / 2)
+                y_list.append(point[1] + area[1] / 2)
+                y_list.append(point[1] - area[1] / 2)
+            upper = int(min(y_list))
+            lower = int(max(y_list))
+            left = int(min(x_list))
+            right = int(max(x_list))
+            upperleft = (left, upper)
+            lowerright = (right, lower)
+            print(upperleft)
+            print(lowerright)
+
+            img_test = cv2.rectangle(
+                img_test, upperleft, lowerright, (255, 0, 0), 2
+            )
+
+        cv2.imshow("img", img_test)
+        cv2.waitKey(0)
 
 
 if __name__ == "__main__":

@@ -2,5 +2,9 @@
     "python.autoComplete.extraPaths": [
         "/home/tatesawa/python_develop/track_sunspots_2/utils.py",
         "/home/tatesawa/python_develop/track_sunspots_2/sun_data.py"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/tatesawa/python_develop/track_sunspots_2/utils.py",
+        "/home/tatesawa/python_develop/track_sunspots_2/sun_data.py"
     ]
 }
