@@ -89,7 +89,7 @@ class Sun:
 
 
 class SunspotsCluster:
-    def __init__(self, img: np.ndarray, point: tuple, size=(100, 100)) -> None:
+    def __init__(self, img: np.ndarray, point: tuple, size=(20, 20)) -> None:
         self.img = cv2.resize(img, size)
         self.point = point
 
@@ -98,3 +98,6 @@ class SunspotsCluster:
 
     def GetPoint(self) -> tuple:
         return self.point
+
+    def GetPointInteger(self) -> tuple:
+        return (int(self.point[0]), int(self.point[1]))
