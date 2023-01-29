@@ -140,6 +140,7 @@ def main():
         p1 = (int((h - h / 2) / slope + w / 2), sun_img.shape[1])
 
         sun_img = cv2.line(sun_img, p0, p1, color=(0, 0, 255), thickness=2)
+        sun_img_next = cv2.line(sun_img_next, p0, p1, color=(0, 0, 255), thickness=2)
 
         result_img = cv2.hconcat([sun_img, sun_img_next])
         cv2.imshow("img", result_img)
