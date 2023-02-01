@@ -140,13 +140,33 @@ def main():
         p1 = (int((h - h / 2) / slope + w / 2), sun_img.shape[1])
 
         sun_img = cv2.line(sun_img, p0, p1, color=(0, 0, 255), thickness=2)
-        sun_img_next = cv2.line(sun_img_next, p0, p1, color=(0, 0, 255), thickness=2)
+        sun_img_next = cv2.line(
+            sun_img_next, p0, p1, color=(0, 0, 255), thickness=2
+        )
 
         result_img = cv2.hconcat([sun_img, sun_img_next])
-        cv2.imshow("img", result_img)
-        cv2.waitKey(0)
-        cv2.imwrite("result/rotate_1215_1216.jpg", result_img)
 
+    # 黒点の緯度経度を求める
+    img_size = suns[0].GetImageSize()
+    p0 = (p0[0] / img_size[0], p0[1] / img_size[1])
+    p1 = (p1[0] / img_size[0], p1[1] / img_size[1])
+    for i, sunspot in enumerate(suns[0].GetSunspotsNorm()):
+        p = sunspot.GetPoint()
+        l = math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
+        cos_theta = ((p[0] - p0[0]) * (p1[0] - p0[0]) + (p[1] - p0[1]) * (p1[1] - p0[1])) / (
+            math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
+            * math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
+        )
+        theta = math.acos(cos_theta)
+        d = l * math.sin(theta)
+
+        latitude = math.asin(d / 0.5)
+        suns[0].SetSunspotLatitudeRadian(i, latitude)
+
+    sunspots_test = suns[0].GetSunspotsNorm()
+    for sunspot in sunspots_test:
+        lat = sunspot.GetLatitudeRad()
+        print(math.degrees(lat))
 
 if __name__ == "__main__":
     main()

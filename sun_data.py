@@ -12,6 +12,7 @@ class Sunspot:
 
         self.upperleft = (int(x - w / 2), int(y - h / 2))
         self.lowerright = (int(x + w / 2), int(y + h / 2))
+        self.lat: float = None
 
     def GetPoint(self) -> tuple:
         return (self.x, self.y)
@@ -25,6 +26,12 @@ class Sunspot:
     def GetLowerRight(self) -> tuple:
         return self.lowerright
 
+    def SetLatitudeRad(self, lat) -> None:
+        self.lat = lat
+
+    def GetLatitudeRad(self) -> float:
+        return self.lat
+
 
 class Sun:
     def __init__(
@@ -36,8 +43,8 @@ class Sun:
         self.color_img = color_img
         self.bin_img = bin_img
         self.size = size
-        self.sunspots = []
-        self.sunspots_norm = []
+        self.sunspots: list[Sunspot] = []
+        self.sunspots_norm: list[Sunspot] = []
         self.drawn_sunspots_img = color_img.copy()
 
     def GetColorImage(self) -> np.ndarray:
@@ -86,6 +93,16 @@ class Sun:
 
     def GetDrawnSunpotsImage(self) -> np.ndarray:
         return self.drawn_sunspots_img
+
+    def GetImageSize(self) -> tuple:
+        return self.size
+
+    def SetSunspotLatitudeRadian(self, index, lad) -> None:
+        self.sunspots[index].SetLatitudeRad(lad)
+        self.sunspots_norm[index].SetLatitudeRad(lad)
+
+    def GetSunspotLatitudeRadian(self, index) -> float:
+        return self.sunspots[index].GetLatitudeRad()
 
 
 class SunspotsCluster:
