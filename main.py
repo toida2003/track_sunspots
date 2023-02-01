@@ -1,6 +1,4 @@
-import glob
 import cv2
-import copy
 import numpy as np
 import math
 import sun_data
@@ -8,15 +6,15 @@ import utils
 from sklearn.cluster import DBSCAN
 
 
-def calc_mse(img1: np.ndarray, img2: np.ndarray):
-    error = np.sum((img1.astype(float) - img2.astype(float)) ** 2)
-    mse = error / (float(img1.shape[0] * img1.shape[1]))
+def calc_mse(img1: np.ndarray, img2: np.ndarray) -> float:
+    error: float = np.sum((img1.astype(float) - img2.astype(float)) ** 2)
+    mse: float = error / (float(img1.shape[0] * img1.shape[1]))
     return mse
 
 
-def make_sun(color_img, bin_img) -> sun_data.Sun:
-    sun = sun_data.Sun(color_img, bin_img)
-    sunspots = utils.detect_sunspots(bin_img)
+def make_sun(color_img: np.ndarray, bin_img: np.ndarray) -> sun_data.Sun:
+    sun: sun_data.Sun = sun_data.Sun(color_img, bin_img)
+    sunspots: list = utils.detect_sunspots(bin_img)
     sun.SetSunspots(sunspots)
     return sun
 
@@ -42,18 +40,18 @@ def main():
         suns.append(sun)
 
     # クラスタリング
-    clusters_list = []
+    clusters_list: list[list] = []
     for i, sun in enumerate(suns):
         sunspots: list[sun_data.Sunspot] = sun.GetSunspotsNorm()
         points: list[tuple] = []
         for sunspot in sunspots:
             points.append(sunspot.GetPoint())
 
-        color = np.random.randint(0, 255, (200, 3))
-        min_samples = 3
-        eps = 0.2
+        color: tuple = np.random.randint(0, 255, (200, 3))
+        min_samples: int = 3
+        eps: float = 0.2
         dbscan = DBSCAN(min_samples=min_samples, eps=eps)
-        clusters = dbscan.fit_predict(points)
+        clusters: list = dbscan.fit_predict(points)
         clusters_list.append(clusters)
 
         for j, k in enumerate(clusters):
@@ -63,7 +61,7 @@ def main():
     clusters_sunspots: list[list[sun_data.SunspotsCluster]] = []
     for sun, clusters in zip(suns, clusters_list):
         sunspots: list[sun_data.Sunspot] = sun.GetSunspots()
-        cluster_types = []
+        cluster_types: list = []
         for cluster in clusters:
             is_resisterd = False
             for i in cluster_types:
@@ -72,31 +70,31 @@ def main():
             if (not (is_resisterd)) and (cluster != -1):
                 cluster_types.append(cluster)
 
-        cluster_sunspots = []
+        cluster_sunspots: list[sun_data.SunspotsCluster] = []
         for cluster_type in cluster_types:
             sunspots_cluster: list[sun_data.Sunspot] = []
             for sunspot, cluster in zip(sunspots, clusters):
                 if cluster == cluster_type:
                     sunspots_cluster.append(sunspot)
 
-            x_list = []
-            y_list = []
+            x_list: list[float] = []
+            y_list: list[float] = []
             for sunspot in sunspots_cluster:
-                point = sunspot.GetPoint()
-                area = sunspot.GetArea()
+                point: tuple(float, float) = sunspot.GetPoint()
+                area: tuple(float, float) = sunspot.GetArea()
                 x_list.append(point[0] + area[0] / 2)
                 x_list.append(point[0] - area[0] / 2)
                 y_list.append(point[1] + area[1] / 2)
                 y_list.append(point[1] - area[1] / 2)
-            upper = int(min(y_list))
-            lower = int(max(y_list))
-            left = int(min(x_list))
-            right = int(max(x_list))
+            upper: float = int(min(y_list))
+            lower: float = int(max(y_list))
+            left: float = int(min(x_list))
+            right: float = int(max(x_list))
 
-            clip_cluster = sun.GetBinaryImage().copy()
-            clip_cluster = clip_cluster[upper:lower, left:right]
-            cluster_x = (right - left) / 2 + left
-            cluster_y = (lower - upper) / 2 + upper
+            clip_cluster: np.ndarray = sun.GetBinaryImage().copy()
+            clip_cluster: np.ndarray = clip_cluster[upper:lower, left:right]
+            cluster_x: float = (right - left) / 2 + left
+            cluster_y: float = (lower - upper) / 2 + upper
             cluster_sunspots.append(
                 sun_data.SunspotsCluster(clip_cluster, (cluster_x, cluster_y))
             )
@@ -105,17 +103,17 @@ def main():
 
     # 翌日の画像の中から同じ黒点群を探す
     for i, cluster_areas in enumerate(clusters_sunspots[:-1]):
-        sun_img = suns[i].GetDrawnSunpotsImage().copy()
-        sun_img_next = suns[i + 1].GetDrawnSunpotsImage().copy()
-        slopes_rad = []
+        sun_img: np.ndarray = suns[i].GetDrawnSunpotsImage().copy()
+        sun_img_next: np.ndarray = suns[i + 1].GetDrawnSunpotsImage().copy()
+        slopes_rad: list[float] = []
         for cluster_area in cluster_areas:
             mse_errors: list = []
             for next_cluster_area in clusters_sunspots[i + 1]:
-                mse = calc_mse(
+                mse: float = calc_mse(
                     cluster_area.GetImage(), next_cluster_area.GetImage()
                 )
                 mse_errors.append(mse)
-            minimum_index = np.argmin(mse_errors)
+            minimum_index: int = np.argmin(mse_errors)
             """
             sun_img_next = cv2.line(
                 sun_img_next,
@@ -125,48 +123,57 @@ def main():
                 thickness=2,
             )
             """
-            vecter = np.array(
+            vecter: tuple = np.array(
                 clusters_sunspots[i + 1][minimum_index].GetPoint()
             ) - np.array(cluster_area.GetPoint())
-            slope = np.arctan2(vecter[1], vecter[0])
+            slope: float = np.arctan2(vecter[1], vecter[0])
             slopes_rad.append(slope)
 
-        rad_rotate = np.median(slopes_rad)
-        slope = math.tan(rad_rotate)
+        rad_rotate: float = np.median(slopes_rad)
+        slope: float = math.tan(rad_rotate)
 
-        w = sun_img.shape[1]
-        h = sun_img.shape[0]
-        p0 = (int(-h / 2 / slope + w / 2), 0)
-        p1 = (int((h - h / 2) / slope + w / 2), sun_img.shape[1])
+        w: int = sun_img.shape[1]
+        h: int = sun_img.shape[0]
+        p0: tuple(int, int) = (int(-h / 2 / slope + w / 2), 0)
+        p1: tuple(int, int) = (
+            int((h - h / 2) / slope + w / 2),
+            sun_img.shape[1],
+        )
 
         sun_img = cv2.line(sun_img, p0, p1, color=(0, 0, 255), thickness=2)
         sun_img_next = cv2.line(
             sun_img_next, p0, p1, color=(0, 0, 255), thickness=2
         )
 
-        result_img = cv2.hconcat([sun_img, sun_img_next])
+        # result_img: np.ndarray = cv2.hconcat([sun_img, sun_img_next])
+        # cv2.imwrite("result/test.jpg", result_img)
 
     # 黒点の緯度経度を求める
-    img_size = suns[0].GetImageSize()
+    img_size: tuple(int, int) = suns[0].GetImageSize()
     p0 = (p0[0] / img_size[0], p0[1] / img_size[1])
     p1 = (p1[0] / img_size[0], p1[1] / img_size[1])
-    for i, sunspot in enumerate(suns[0].GetSunspotsNorm()):
-        p = sunspot.GetPoint()
-        l = math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
-        cos_theta = ((p[0] - p0[0]) * (p1[0] - p0[0]) + (p[1] - p0[1]) * (p1[1] - p0[1])) / (
-            math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
-            * math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
-        )
-        theta = math.acos(cos_theta)
-        d = l * math.sin(theta)
+    for sun in suns:
+        for i, sunspot in enumerate(sun.GetSunspotsNorm()):
+            p: tuple(float, float) = sunspot.GetPoint()
+            l: float = math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
+            cos_theta: float = (
+                (p[0] - p0[0]) * (p1[0] - p0[0])
+                + (p[1] - p0[1]) * (p1[1] - p0[1])
+            ) / (
+                math.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2)
+                * math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
+            )
+            theta: float = math.acos(cos_theta)
+            d: float = l * math.sin(theta)
 
-        latitude = math.asin(d / 0.5)
-        suns[0].SetSunspotLatitudeRadian(i, latitude)
+            latitude: float = math.asin(d / 0.5)
+            sun.SetSunspotLatitudeRadian(i, latitude)
 
-    sunspots_test = suns[0].GetSunspotsNorm()
-    for sunspot in sunspots_test:
-        lat = sunspot.GetLatitudeRad()
-        print(math.degrees(lat))
+        sunspots_test: list[sun_data.Sunspot] = sun.GetSunspotsNorm()
+        for sunspot in sunspots_test:
+            lat: float = sunspot.GetLatitudeRad()
+            print(math.degrees(lat))
+
 
 if __name__ == "__main__":
     main()

@@ -5,13 +5,14 @@ import cv2
 
 class Sunspot:
     def __init__(self, x, y, w, h) -> None:
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
+        self.x: float = x
+        self.y: float = y
+        self.w: float = w
+        self.h: float = h
 
-        self.upperleft = (int(x - w / 2), int(y - h / 2))
-        self.lowerright = (int(x + w / 2), int(y + h / 2))
+        self.upperleft: tuple(int, int) = (int(x - w / 2), int(y - h / 2))
+        self.lowerright: tuple(int, int) = (int(x + w / 2), int(y + h / 2))
+
         self.lat: float = None
 
     def GetPoint(self) -> tuple:
@@ -40,12 +41,12 @@ class Sun:
         bin_img: np.ndarray,
         size: tuple = (1000, 1000),
     ) -> None:
-        self.color_img = color_img
-        self.bin_img = bin_img
-        self.size = size
+        self.color_img: np.ndarray = color_img
+        self.bin_img: np.ndarray = bin_img
+        self.size: tuple(int, int) = size
         self.sunspots: list[Sunspot] = []
         self.sunspots_norm: list[Sunspot] = []
-        self.drawn_sunspots_img = color_img.copy()
+        self.drawn_sunspots_img: np.ndarray = color_img.copy()
 
     def GetColorImage(self) -> np.ndarray:
         return self.color_img
@@ -56,9 +57,9 @@ class Sun:
     def SetSunspots(self, sunspots_norm: list) -> None:
         self.sunspots_norm += sunspots_norm
         for sunspot_norm in sunspots_norm:
-            p = sunspot_norm.GetPoint()
-            s = sunspot_norm.GetArea()
-            sunspot = Sunspot(
+            p: tuple(float, float) = sunspot_norm.GetPoint()
+            s: tuple(float, float) = sunspot_norm.GetArea()
+            sunspot: Sunspot = Sunspot(
                 p[0] * self.size[0],
                 p[1] * self.size[1],
                 s[0] * self.size[0],
@@ -107,8 +108,8 @@ class Sun:
 
 class SunspotsCluster:
     def __init__(self, img: np.ndarray, point: tuple, size=(20, 20)) -> None:
-        self.img = cv2.resize(img, size)
-        self.point = point
+        self.img: np.ndarray = cv2.resize(img, size)
+        self.point: tuple(float, float) = point
 
     def GetImage(self) -> np.ndarray:
         return self.img
